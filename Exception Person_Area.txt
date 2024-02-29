@@ -1,0 +1,54 @@
+create table Area (aid int primary key, aname varchar(20),area_type varchar(5));
+insert into area values(101,'Shivaji Road','Rural');
+insert into area values(102,'Mj Road','Rural');
+insert into area values(103,'Main Road','Urban');
+
+create table Person(pno int primary key,name varchar(20),birthdate date,income money,aid int references area);
+
+insert into Person values(1,'Shivaji','2009-05-01',1000,101);
+insert into Person values(2,'Adii','2020-05-01',25000,101);
+insert into Person values(3,'Karan','2006-04-04',4500,102);
+insert into Person values(4,'Krish','2016-06-30',26000,102);
+insert into Person values(5,'Sagar','2010-07-11',45000,103);
+insert into Person values(6,'Sahil','2030-11-21',3600,103);
+
+. Write a stored function that accepts the area name as an input parameter from the user
+and displays the details of persons living in that area. Raise an exception if area name is invalid.
+=
+ create or replace function f1(area_name text)returns void as
+ $$
+  declare
+   r1 person%rowtype;
+   c1 cursor for select person.* from person,area where area.aid=person.aid and 
+      aname=area_name;
+  begin 
+  open c1;
+    loop
+    fetch c1 into r1;
+     exit when not found;
+  
+     raise notice'pno=%',r1.pno;
+     raise notice'name=%',r1.name;
+     raise notice'bdate=%',r1.birthdate;
+     raise notice'income=%',r1.income;
+    end loop;
+   close c1;
+   
+     if not found then
+     raise exception'Invalid area name';
+    end if; 
+  end;
+  $$
+   language plpgsql;     
+
+ select f1('Shivaji Road');
+
+NOTICE:  pno=1
+NOTICE:  name=Shivaji
+NOTICE:  bdate=2009-05-01
+NOTICE:  income=₹1,000.00
+NOTICE:  pno=2
+NOTICE:  name=Adii
+NOTICE:  bdate=2020-05-01
+NOTICE:  income=₹25,000.00
+ERROR:  Invalid area name=Shivaji Road

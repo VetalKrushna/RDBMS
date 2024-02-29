@@ -1,0 +1,80 @@
+create table Student(roll_no integer primary key,name varchar(30),address varchar(50),class varchar(10));
+
+create table Subject(scode varchar(10) primary key, subject_name varchar(20));
+
+create table SS(roll_no int references student,scode varchar(10) references subject,marks_scored int);
+
+insert into student values(1,'Alok','nagar','fy');
+insert into student values(2,'Amol','pune','fy');
+insert into student values(3,'Ayush','belapur','sy');
+insert into student values(4,'Akash','wadala','ty');
+insert into student values(5,'Arush','nagpur','ty');
+
+insert into subject values('A1','RDBMS');
+insert into subject values('B2','Math');
+insert into subject values('C3','C lang');
+insert into subject values('D4','Bootstap');
+
+insert into ss values(1,'A1',80);
+insert into ss values(1,'A1',70);
+insert into ss values(2,'B2',90);
+insert into ss values(2,'C3',40);
+insert into ss values(3,'B2',60);
+insert into ss values(4,'D4',80);
+insert into ss values(5,'C3',50);
+
+a. Write a function which will accept the rollno and print all the details 
+   of that student.
+  create or replace function E1(rno int)returns void as
+  $$
+  declare
+   r1 student%rowtype;
+  begin
+   select * into r1 from student where roll_no=rno;
+   raise notice'Roll no=%',r1.roll_no;   
+   raise notice'Name=%',r1.name;   
+   raise notice'Address=%',r1.address;   
+   raise notice'class=%',r1.class;   
+  end;
+$$
+language plpgsql;
+select E1(1);
+
+b. Write a function to accept student name as input and displays details of that student.
+  create or replace function E2(s_name student.name%type)returns void as
+  $$
+  declare
+   r1 student%rowtype;
+  begin
+   select * into r1 from student where name=s_name;
+   raise notice'Roll no=%',r1.roll_no;   
+   raise notice'Name=%',r1.name;   
+   raise notice'Address=%',r1.address;   
+   raise notice'class=%',r1.class;   
+  end;
+$$
+language plpgsql;
+select E2('Alok');
+ 
+
+c. Write a stored function using cursors, to accept class from the user and display the details of 
+the students of that class.
+ create or replace function E3(s_class student.class%type)returns void as
+$$
+ declare
+  r1 student%rowtype;
+ c1 cursor for select * from student where class=s_class;
+begin
+  open c1;
+    loop
+   fetch c1 into r1;
+   exit when not found;
+    raise notice'Roll no=%',r1.roll_no;   
+    raise notice'Name=%',r1.name;   
+    raise notice'Address=%',r1.address;   
+    raise notice'class=%',r1.class;   
+  end loop;
+  close c1;
+end;$$
+language plpgsql;
+select E3('fy');

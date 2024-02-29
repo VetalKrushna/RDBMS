@@ -1,0 +1,39 @@
+many to many 
+create table Doctor (d_no int primary key,d_name varchar(30),
+specialization varchar(35),charges int);
+
+a. Write a trigger before insert/update on Doctor table.Raise
+   exception if charges are<0.
+  =
+create or replace function f2()returns trigger as $$
+declare
+begin
+ if(new.charges=0) then
+   raise exception'0 Charges not allowed';
+ end if;
+ return new;
+end;$$
+language plpgsql;
+ create trigger t2 before insert on doctor for each row execute
+ procedure f2();
+insert into doctor values(2,'Om','BHMS',0);  
+
+b. Write a trigger that restricts insertion of charges 
+  value greater than 500.
+=
+  create or replace function f1()returns trigger as
+$$
+  declare
+  begin
+   if(new.charges>500) then
+     raise exception'Charges greater than 500 is not allowed';
+   end if;
+  return new;
+  end;
+  $$
+  language plpgsql;
+ 
+ create trigger t1 before insert on doctor for each row execute 
+  procedure f1();
+ 
+ insert into doctor values(1,'Karan','MBBS',700);

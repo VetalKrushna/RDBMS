@@ -1,0 +1,72 @@
+create table Branch(Bid int primary key, Bname varchar(30),Bcity varchar(20));
+
+insert into Branch values(101,'MG Road','Pune');
+insert into Branch values(102,'Shivaji Road','Shrirampur');
+insert into Branch values(103,'Newasa Road','Shrirampur');
+
+create table Customer(Cno int primary key,Cname varchar(30),Caddr text,City varchar(20));
+
+insert into Customer values(201,'Om','Pune','Pune');
+insert into Customer values(202,'Sai','Pune','Pune');
+insert into Customer values(203,'Ram','Shrirampur','Shrirampur');
+insert into Customer values(204,'Sham','Nashik','Nashik');
+insert into Customer values(205,'Sagar','Mumbai','Mumbai');
+
+create table Loan_app(Lno int primary key,Lamtreq money,lamtapp money,Ldate date);
+
+insert into Loan_app values (301,5000,6000,'2000-01-12');
+insert into Loan_app values(302,7000,5000,'2001-02-13');
+insert into Loan_app values(303,8000,7000,'2002-03-14');
+insert into Loan_app values(304,9000,9000,'2003-07-15');
+insert into Loan_app values(305,12000,12000,'2005-07-20');
+
+create table BCL(Bid int references Branch(Bid),Cno int references Customer(Cno),Lno int references Loan_app(Lno));
+
+insert into BCL values(101,201,301);
+insert into BCL values(102,201,302);
+insert into BCL values(102,201,303);
+insert into BCL values (103,203,304);
+insert into BCL values(103,203,305);
+
+create or replace function f1(bname1 branch.bname%type) returns int as
+$$
+declare 
+ cnt int;
+ begin
+  select count(*) into cnt from branch,Customer,bcl where Customer.Cno=bcl.cno and branch.bid=bcl.bid
+  and bname=bname1;
+  return cnt;
+end;
+$$
+language plpgsql;
+
+Write a function to find the maximum loan amount approved.
+
+ create or replace function mla()returns MONEY
+ as
+ $$
+ DECLARE
+  a money;
+ BEGIN
+  select max(lamtapp) into a from loan_app;
+  return a;
+ END;
+$$
+language plpgsql;
+
+c) Create a function which returns the total number of customers who have 
+applied for a loan more than Rs.100000. (Accept loan amount as input parameter
+
+create or replace function count_cust1 (lamtapp1 loan_app.lamtapp%type) returns INT 
+as
+$$
+ DECLARE
+ a int;
+ BEGIN
+  select count(*) into a from customer, loan_app,bcl
+  where customer.cno=bcl.cno and loan_app.lno=bcl.lno
+ and lamtapp>=lamtapp1;
+ return a;
+END;
+$$
+language plpgsql;

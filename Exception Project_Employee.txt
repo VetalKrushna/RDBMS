@@ -1,0 +1,73 @@
+create table Project(pno int primary key,pname char(30),ptype char(20), duration int);
+insert into project values(101,'Robotics','Tech',3);
+insert into project values(102,'Account','Finance',8);
+insert into project values(103,'Hospital','Medicare',5);
+
+create table Employee(empno int primary key,ename char(20), joining_date date);
+insert into Employee values(1,'Rohit','2024-05-01');
+insert into Employee values(2,'addi','2020-03-12');
+insert into Employee values(3,'Sahil','2010-05-11');
+
+create table EP(pno int references project,empno int references employee,star_date date);
+insert into EP values(101,1,'2020-05-01');
+insert into EP values(101,2,'2019-06-12');
+insert into EP values(102,3,'2018-07-06');
+insert into EP values(102,2,'2020-11-05');
+insert into EP values(103,3,'2022-12-04');
+insert into EP values(103,1,'2023-01-30');
+
+
+a. Write a stored function to accept project name as input and print the names of employees working on the project. Also print the total number of employees working on that project. Raise an exception for an invalid project name.
+==
+  create or replace function edata(p_name text)returns text as $$
+  declare 
+   rec record;
+   cnt int;
+  begin
+   select count(*) into cnt from employee,project,ep where employee.empno=ep.empno and
+   project.pno=ep.pno and pname=p_name;
+     for rec in select ename from employee,project,ep where employee.empno=ep.empno and
+     project.pno=ep.pno and pname=p_name
+   loop
+     raise notice'Employee name=%',rec.ename;
+   end loop;
+     raise notice'Total no of Employee working on given project =%',cnt;
+   
+   if not found then
+     raise exception'Project name=% is invalid',p_name;
+   end if;
+  end;
+  $$
+  language plpgsql;        
+  
+       
+CREATE FUNCTION
+plpgsql=# select edata('Robotics');
+NOTICE:  Employee name=Rohit               
+NOTICE:  Employee name=addi                
+NOTICE:  Total no of Employee working on given project =2
+ERROR:  control reached end of function without RETURN
+
+b. Write a stored function to accept empno as an input parameter from the user and count
+the number of projects of a given employee. Raise an exception if the employee number
+is invalid      
+==
+  create or replace function no_p(emp_no int )returns void as
+  $$
+   declare
+     cnt int ;
+   begin
+    select count(*) into cnt from ep where empno=emp_no;
+    raise notice'Total no of project=%',cnt; 
+    if not found then
+    raise notice'invalid empno=%',emp_no;
+   end if;
+  end;
+  $$
+  language plpgsql;        
+    
+    select no_p(4);
+        CREATE FUNCTION
+NOTICE:  Total no of project=2
+ERROR:  control reached end of function without RETURN
+CONTEXT:  PL/pgSQL function no_p(integer)

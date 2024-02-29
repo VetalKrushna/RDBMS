@@ -1,0 +1,96 @@
+create table project(pno int primary key, pname varchar(20), ptype varchar(20), duration int);
+
+create table employee(eno int primary key, ename varchar(20), joindate date);
+
+create table PE(pno int references project, eno int references employee, startdate date);
+
+insert into project values(101, 'Exam', 'Educational',3);
+insert into project values(102, 'GSA', 'System', 5);
+insert into project values(103, 'AI',   'Robotics', 4);
+insert into project values(104, 'SSC',   'Networks', 2);
+insert into project values(105, 'Database','Industrial', 1);
+
+insert into employee values(10, 'Danish', '2011-11-21');
+insert into employee values(20, 'Satish', '2010-01-01');
+insert into employee values(30, 'Amol',   '2012-06-01');
+insert into employee values(40, 'Amok',   '2013-02-01');
+insert into employee values(50, 'Nitesh', '2012-08-01');
+
+insert into PE values (101, 10, '2014-01-21');
+insert into PE values (101, 20, '2014-01-21');
+insert into PE values (102, 30, '2013-11-11');
+insert into PE values (102, 40, '2013-11-15');
+insert into PE values (103, 50, '2014-05-21'); 
+insert into PE values (103, 40, '2024-05-11');
+insert into PE values (105, 10, '2002-04-30'); 
+insert into PE values (104, 20, '2014-08-17');
+
+a. Write a stored function to accept project type as an input and display all project names of 
+that type.
+=create or replace function name2(type project.ptype%type)returns void as
+ $$ 
+ declare
+ p_name project.pname%type; 
+ c1 cursor for select pname from project where ptype=type;
+ begin
+ open c1;
+ loop
+ fetch c1 into p_name;
+  exit when not found; 
+ raise notice'project name=%',p_name;
+end loop;  
+close c1;
+end;
+$$
+language plpgsql;
+
+create or replace function fun1(type project.ptype%type)returns text as
+ $$ 
+ declare
+ p_name project.pname%type; 
+ r1 record;
+ begin
+ for r1 in select pname from project where ptype=type
+ loop
+ raise notice'project name=%',r1.pname;
+end loop;  
+return r1;
+end;
+$$
+language plpgsql;
+  
+select fun1('system');
+
+b. Write a function which accepts employee name and prints the details of the project which 
+the employee works on.
+=create or replace function name1(name project.pname%type)returns void as
+ $$ 
+ declare
+ p1 project%rowtype; 
+begin
+  select p.* into p1 from project as p,employee as e,pe where p.pno=pe.pno and
+   e.eno=pe.eno and ename=name;
+  raise notice'Pno=%',p1.pno;
+  raise notice'Pname=%',p1.pname;
+  raise notice'Ptype=%',p1.ptype;
+  raise notice'P duration=%',p1.duration;
+ end;
+$$
+language plpgsql;
+select name1('Amol');
+
+c. Write a function to accept project name as input and returns the number of employees 
+working on the project.
+=
+ create or replace function name5(p_name project.pname%type)returns void as
+ $$ 
+ declare
+ cnt int; 
+ begin
+  select count(*) into cnt from project as p,employee as e,pe where p.pno=pe.pno and
+   e.eno=pe.eno and pname=p_name;
+ raise notice' number of employees working on the project:%',cnt;
+ end;
+$$
+language plpgsql;
+select name5('AI');

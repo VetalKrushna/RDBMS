@@ -1,0 +1,60 @@
+
+create table Account (a_no int primary key,
+ a_type varchar(10),
+ opening_date  date,
+ balance money);
+
+a. Write a trigger which is executed whenever update is made to the account table.
+ If the balance becomes less than 1000, print an error message that balance cannot be less than 1000.
+
+
+create or replace function fun5() returns trigger as
+$$
+declare
+begin 
+  if(new.balance<'1000') then
+   raise exception'update kartani balance less than 1000 nako...';
+  end if;
+return new;
+end; 
+$$
+language plpgsql;
+
+create trigger t6
+before update  on  Account
+for each row
+execute procedure fun5();
+
+update Account set balance='25000' 
+where a_no=1001;
+
+update Account set balance='900' 
+where a_no=1001;
+
+
+
+c)Write a trigger before inserting an account record in Account table and 
+raise exception if balance is <500.
+
+create or replace function fun_account() returns trigger as
+$$
+declare
+begin 
+  if(new.balance<'500') then
+   raise exception'Account Balance must be greater than 500.....';
+  end if;
+return new;
+end; 
+$$
+language plpgsql;
+
+create trigger t5
+before insert  on  Account
+for each row
+execute procedure fun_account();
+
+insert into account values(1001,'Saving','2024-02-20',5000);
+insert into account values(1002,'Current','2024-01-20',300);
+
+postgres=# insert into account values(1002,'Current','2024-01-20',300);
+ERROR:  Account Balance must be greater than 500.....

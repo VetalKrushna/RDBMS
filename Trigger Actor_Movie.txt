@@ -1,0 +1,82 @@
+
+create table Actor(a_name varchar(30),
+ role varchar(30),
+ charges money,
+ a_address varchar(30) );
+
+insert into Actor values('om','hero',50000,'pune');
+insert into Actor values('sai','villan',100000,'pune');
+insert into Actor values('sham','hero',50000,'pune');
+
+postgres=# delete from actor where a_name='om';
+DELETE 1
+
+a)Write a trigger which will be executed whenever an actor is deleted from the
+ actor table, display appropriate message. 
+
+create or replace function fun1() returns trigger 
+as
+$$
+DECLARE
+BEGIN
+           raise  exception 'actor record delete karu shkat nahi...trigger fire Zala... ';
+ return new;
+END; 
+$$
+language plpgsql;
+
+create trigger t11
+before delete on actor
+for each row
+execute procedure fun1();
+ 
+postgres=# delete from actor where a_name='sai';
+ERROR:  actor record is being deleted
+CONTEXT:  PL/pgSQL function fun1() line 4 at RAISE
+
+
+
+
+
+
+create table  Movie (m_name varchar (25), release_year integer, budget money);
+insert into movie values('aa','2021',150000);
+insert into movie values('rrr','2022',50000);
+ 
+b. Write a trigger which will be executed whenever a movie is deleted from the movie table, display appropriate message
+
+create or replace function fun1() returns trigger 
+as
+$$
+DECLARE
+BEGIN
+           raise  exception 'delete movie record not Allowed...';
+    return new;
+END; 
+$$
+language plpgsql;
+
+create trigger t1
+before delete on movie
+for each row
+execute procedure fun1();
+ 
+
+c)Write a trigger which will be executed whenever insertion is made to the movie table. If the budget is less than 1,00,000 do not allow the insertion. Give appropriate message.
+
+create or replace function fun1() returns trigger as
+$$
+declare
+begin
+     if(new.budget<'100000') then
+     raise exception' budget less than 1 lakh not Allowed...';
+     end if;
+return new;
+end; 
+$$
+language plpgsql;
+
+create trigger t3
+before insert on movie
+for each row
+execute procedure fun1();

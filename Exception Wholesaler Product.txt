@@ -1,0 +1,107 @@
+create table Wholesaler(w_no int primary key,w_name varchar(20),
+address text,city text); 
+
+create table Product(p_no int primary key,product_name varchar(20),
+rate money);
+ 
+create table WP(w_no int references wholesaler,p_no int references product,
+quantity int);
+
+insert into wholesaler values(1,'Karan','M Road','Pune');
+insert into wholesaler values(2,'Rohit','Main Road','Mumbai');
+insert into wholesaler values(3,'Naga','S corner','Nashik');
+insert into wholesaler values(4,'Jojo','A chauk','Nagar');
+
+insert into Product values(101,'Mouse',500);
+insert into Product values(102,'Keyboard',1000);
+insert into Product values(103,'PD',499);
+insert into Product values(104,'CD',600);
+
+insert into WP values(1,104,150);
+insert into WP values(1,104,50);
+insert into WP values(2,103,100);
+insert into WP values(2,103,500);
+insert into WP values(3,102,90);
+insert into WP values(3,102,20);
+insert into WP values(4,101,200);
+insert into WP values(4,101,50);
+
+a. Write a function to accept quantity from user. Quantity must be within range 50-200. If user 
+enters the quantity out of range then raise an user defined exception “quantity_out_of 
+_range”otherwise enter the record in table.
+==
+create  or replace function Quantity(q int)returns void as
+$$
+declare
+begin
+  if q>=50 and q<=200 then
+  insert into wp(quantity) values(q);
+else
+   raise exception'  Quantity out of range...' ;
+end if;
+end ;
+$$
+language plpgsql;
+
+select Quantity(100);
+select * from wp;
+
+plpgsql=# select Quantity(40);
+ERROR:    Quantity out of range...
+ 
+b. Write a function which accept rate from user. If user enters rate less than or equal to zero then 
+raise an user defined exception “Invalid_Rate_Value” otherwise display message “Correct 
+Input”.
+==
+create  or replace function Rate2(rate1 money)returns void as
+$$
+begin
+  if rate1<='0' then
+   raise exception'Invalid_Rate_Value........!' ;
+else
+ raise notice' Correct input......!';
+
+end if;
+end ;
+$$
+language plpgsql;
+
+ select Rate2('2600');
+ 
+plpgsql=#  select Rate2('15000');
+NOTICE:   Correct input......!
+
+plpgsql=#  select Rate2('-40');
+ERROR:  Invalid_Rate_Value........!
+
+c. Write a function to accept product name as parameter. If entered product name is not valid 
+then raise an user defined exception ”Invalid_Product_Name” otherwise display product details of specified product
+= 
+create  or replace function pro_name(pname1 product.product_name%type)returns void as
+$$
+declare
+  r1 product%rowtype;
+begin
+   select * into r1 from product where product_name=pname1;
+
+  if not found then
+    raise exception'Invalid_Product_Name.....!' ;
+  end if;
+
+   raise notice'Project no=%',r1.p_no;
+   raise notice'Project name=%',r1.product_name;
+   raise notice'Project rate=%',r1.rate;
+ 
+end ;
+$$
+language plpgsql;
+select pro_name('CD');
+
+plpgsql=# select pro_name('CD');
+NOTICE:  Project no=104
+NOTICE:  Project name=CD
+NOTICE:  Project rate=$600.00
+
+
+plpgsql=# select pro_name('Car');
+ERROR:  Invalid_Product_Name.....!

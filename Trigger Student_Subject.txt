@@ -1,0 +1,69 @@
+
+create table student(rno int primary key,name varchar(20),addr varchar(20),class varchar(10));
+
+insert into student values(101,'om','pune','fybcs');
+insert into student values(102,'sai','shirdi','sybcs');
+insert into student values(103,'ram','shrirampur','tybcs');
+insert into student values(104,'sham','mumbai','mcs');
+insert into student values(105,'sunder','nager','fybcs');
+
+create table subject(sno int primary key,scode varchar(10),subname varchar(20));
+
+insert into subject values(201,'01AA','mathematics');
+insert into subject values(202,'02BB','datastructure');
+insert into subject values(203,'03CC','rdbms');
+insert into subject values(204,'04DD','statestic');
+insert into subject values(205,'05EE','english');
+
+create table stud_sub(rno int references student,sno int references subject,marks int);
+ 
+insert into stud_sub values(101,201,45);
+insert into stud_sub values(101,201,20);
+insert into stud_sub values(101,201,60);
+insert into stud_sub values(101,201,70);
+insert into stud_sub values(101,201,90);
+
+a.write a trigger deleting a student record from the student table.
+Raise a notice and display the message
+  "student record is being deleted".
+->
+create or replace function fun() returns trigger 
+as
+$$
+DECLARE
+BEGIN
+           raise notice'student record is being deleted';
+    return new;
+END; 
+$$
+language plpgsql;
+
+
+create trigger t1
+before delete on student
+for each row
+execute procedure fun();
+
+triggereg=# delete from student where rno=105;
+NOTICE:  student record is being deleted
+DELETE 0
+
+b.write a trigger to ensure that the marks entered for a student,with respect to a subject is never<10 and greater than 100.
+->
+ create or replace function insertmark() returns trigger
+ as
+$$
+declare
+begin 
+  if(new.marks<10 OR new.marks>100) then
+    RAISE EXCEPTION 'marks should in between 10 and 100';
+  end if;
+return new;
+end; 
+$$
+language plpgsql;
+
+create trigger marks3
+before insert or update on stud_sub
+for each row
+execute procedure insertmark();
