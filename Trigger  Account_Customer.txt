@@ -13,7 +13,7 @@ $$
 declare
 begin 
   if(new.balance<'1000') then
-   raise exception'update kartani balance less than 1000 nako...';
+   raise exception'BAlance less than 1000 does not allowed...';
   end if;
 return new;
 end; 
@@ -31,7 +31,28 @@ where a_no=1001;
 update Account set balance='900' 
 where a_no=1001;
 
+b. Write a trigger before deleting an account record from Account table. Raise a notice 
+and display the message “Account record is being deleted.”
+=
+ create or replace function fun() returns trigger 
+as
+$$
+DECLARE
+BEGIN
+    raise notice'Account record is being deleted....';
+    return new;
+END; 
+$$
+language plpgsql;
 
+
+create trigger t1
+before delete on account
+for each row
+execute procedure fun();
+
+ delete from account where a_no=101;
+NOTICE:  Account record is being deleted....
 
 c)Write a trigger before inserting an account record in Account table and 
 raise exception if balance is <500.
